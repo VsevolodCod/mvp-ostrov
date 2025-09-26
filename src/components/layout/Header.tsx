@@ -2,15 +2,17 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X, User, Hotel, FileText, Settings } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import LoginModal from "@/components/auth/LoginModal";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const location = useLocation();
 
   const navigation = [
     { name: "Главная", href: "/", icon: Hotel },
-    { name: "Личный кабинет", href: "/dashboard", icon: User },
-    { name: "Отели", href: "/hotels", icon: Hotel },
+    { name: "Задания", href: "/hotel-selection", icon: Hotel },
+    { name: "Личный кабинет", href: "/guest-dashboard", icon: User },
     { name: "Отчеты", href: "/reports", icon: FileText },
   ];
 
@@ -48,12 +50,14 @@ const Header = () => {
 
           {/* CTA Button */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => setIsLoginOpen(true)}>
               Войти
             </Button>
-            <Button size="sm" className="bg-gradient-ocean">
-              Стать секретным гостем
-            </Button>
+            <Link to="/application">
+              <Button size="sm" className="bg-gradient-ocean">
+                Стать секретным гостем
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -86,17 +90,21 @@ const Header = () => {
                 </Link>
               ))}
               <div className="flex flex-col space-y-2 pt-4 border-t">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={() => setIsLoginOpen(true)}>
                   Войти
                 </Button>
-                <Button size="sm" className="bg-gradient-ocean">
-                  Стать секретным гостем
-                </Button>
+                <Link to="/application">
+                  <Button size="sm" className="bg-gradient-ocean">
+                    Стать секретным гостем
+                  </Button>
+                </Link>
               </div>
             </nav>
           </div>
         )}
       </div>
+      
+      <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
     </header>
   );
 };
