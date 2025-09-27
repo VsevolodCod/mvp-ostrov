@@ -10,20 +10,28 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useUserAssignments } from "@/hooks/useUserAssignments.js";
+import Leaderboard from "@/components/Leaderboard";
 
 const GuestDashboard = () => {
-  const { assignments, getUserStats, completeAssignment, cancelAssignment } = useUserAssignments();
+  const { assignments, points, getUserStats, completeAssignment, cancelAssignment, addPoints, getLevelInfo, getUserLeaderboardInfo } = useUserAssignments();
   const stats = getUserStats();
+  const levelInfo = getLevelInfo();
+  const userLeaderboardInfo = getUserLeaderboardInfo();
 
   const guestProfile = {
     name: "Анна Петрова",
-    level: "Эксперт",
+    level: levelInfo.current.name,
+    levelIcon: levelInfo.current.icon,
+    levelColor: levelInfo.current.color,
+    levelDescription: levelInfo.current.description,
     rating: 4.8,
     totalReports: stats.completed,
     completedAssignments: stats.completed,
     activeAssignments: stats.active,
-    points: 2840 + (stats.completed * 100), // Добавляем баллы за выполненные задания
-    nextLevelPoints: 3000,
+    points: points, // Используем реальные очки из store
+    nextLevelPoints: levelInfo.next ? levelInfo.next.minPoints : null,
+    pointsToNext: levelInfo.pointsToNext,
+    levelProgress: levelInfo.progress,
     joinDate: "Январь 2023"
   };
 
@@ -97,17 +105,23 @@ const GuestDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Уровень</p>
-                <p className="text-2xl font-bold text-blue-600">{guestProfile.level}</p>
+                <div className="flex items-center space-x-2">
+                  <span className="text-2xl">{guestProfile.levelIcon}</span>
+                  <p className="text-2xl font-bold text-blue-600">{guestProfile.level}</p>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">{guestProfile.levelDescription}</p>
               </div>
               <Award className="w-8 h-8 text-blue-600" />
             </div>
-            <div className="mt-4">
-              <div className="flex justify-between text-sm text-gray-600 mb-1">
-                <span>До следующего уровня</span>
-                <span>{guestProfile.nextLevelPoints - guestProfile.points} баллов</span>
+            {guestProfile.nextLevelPoints && (
+              <div className="mt-4">
+                <div className="flex justify-between text-sm text-gray-600 mb-1">
+                  <span>До следующего уровня</span>
+                  <span>{guestProfile.pointsToNext} очков</span>
+                </div>
+                <Progress value={guestProfile.levelProgress} className="h-2" />
               </div>
-              <Progress value={(guestProfile.points / guestProfile.nextLevelPoints) * 100} className="h-2" />
-            </div>
+            )}
           </CardContent>
         </Card>
 
@@ -152,9 +166,11 @@ const GuestDashboard = () => {
       </div>
 
       <Tabs defaultValue="assignments" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="assignments">Текущие задания</TabsTrigger>
           <TabsTrigger value="reports">История отчетов</TabsTrigger>
+          <TabsTrigger value="points">История очков</TabsTrigger>
+          <TabsTrigger value="leaderboard">Таблица лидеров</TabsTrigger>
           <TabsTrigger value="achievements">Достижения</TabsTrigger>
           <TabsTrigger value="profile">Профиль</TabsTrigger>
         </TabsList>
@@ -223,11 +239,28 @@ const GuestDashboard = () => {
                         </Button>
                       </Link>
                       {assignment.status === "Активное" && (
-                        <Link to="/create-report">
-                          <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                            Создать отчет
+                        <>
+                          <Link to="/create-report">
+                            <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                              Создать отчет
+                            </Button>
+                          </Link>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => {
+                              const result = completeAssignment(assignment.id, {
+                                overallRating: 4.2, // Пример рейтинга
+                                completedAt: new Date().toISOString()
+                              });
+                              if (result.success) {
+                                alert(`Задание завершено! Получено ${result.pointsEarned} очков!`);
+                              }
+                            }}
+                          >
+                            Завершить задание
                           </Button>
-                        </Link>
+                        </>
                       )}
                     </div>
                   </div>
@@ -279,6 +312,107 @@ const GuestDashboard = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Points History */}
+        <TabsContent value="points" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>История очков</CardTitle>
+              <CardDescription>Ваши заработанные очки и достижения</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {/* Current Points Summary */}
+                <div className="bg-gradient-to-r from-orange-50 to-yellow-50 p-4 rounded-lg border">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold text-orange-900">Текущие очки</h3>
+                      <p className="text-orange-700">Общий баланс</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-3xl font-bold text-orange-600">{points}</div>
+                      <div className="text-sm text-orange-600">очков</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Points from completed assignments */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-gray-900">Очки за выполненные задания:</h4>
+                  {assignments.filter(a => a.status === 'Завершено' && a.pointsEarned).length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <Gift className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                      <p>Пока нет выполненных заданий</p>
+                      <p className="text-sm">Выполните задания, чтобы заработать очки!</p>
+                    </div>
+                  ) : (
+                    assignments
+                      .filter(a => a.status === 'Завершено' && a.pointsEarned)
+                      .map((assignment) => (
+                        <div key={assignment.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h5 className="font-medium">{assignment.hotel_name || assignment.title}</h5>
+                              <p className="text-sm text-gray-600">
+                                Завершено: {new Date(assignment.completedAt).toLocaleDateString('ru-RU')}
+                              </p>
+                              {assignment.reportData && (
+                                <p className="text-sm text-gray-500">
+                                  Рейтинг отчета: {assignment.reportData.overallRating}/5
+                                </p>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <div className="text-lg font-semibold text-green-600">
+                                +{assignment.pointsEarned}
+                              </div>
+                              <div className="text-sm text-gray-500">очков</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                  )}
+                </div>
+
+                {/* Points breakdown */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-gray-900 mb-3">Как зарабатывать очки:</h4>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div className="flex justify-between">
+                      <span>Базовые очки за выполнение задания:</span>
+                      <span className="font-medium">100 очков</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Бонус за высокий приоритет:</span>
+                      <span className="font-medium">+50 очков</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Бонус за средний приоритет:</span>
+                      <span className="font-medium">+25 очков</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Бонус за бесплатное проживание:</span>
+                      <span className="font-medium">+30 очков</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Бонус за отличный отчет (4.5+):</span>
+                      <span className="font-medium">+50 очков</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Бонус за хороший отчет (4.0+):</span>
+                      <span className="font-medium">+25 очков</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Leaderboard */}
+        <TabsContent value="leaderboard" className="space-y-4">
+          <Leaderboard currentUser={userLeaderboardInfo} />
         </TabsContent>
 
         {/* Achievements */}
@@ -333,7 +467,10 @@ const GuestDashboard = () => {
                   <div>
                     <h3 className="text-xl font-semibold">{guestProfile.name}</h3>
                     <p className="text-gray-600">Участник с {guestProfile.joinDate}</p>
-                    <Badge className="mt-1">{guestProfile.level}</Badge>
+                    <Badge className="mt-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+                      <span className="mr-1">{guestProfile.levelIcon}</span>
+                      {guestProfile.level}
+                    </Badge>
                   </div>
                 </div>
                 
@@ -348,6 +485,14 @@ const GuestDashboard = () => {
                       <div className="flex justify-between">
                         <span>Выполнено заданий:</span>
                         <span className="font-medium">{guestProfile.completedAssignments}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Активных заданий:</span>
+                        <span className="font-medium">{guestProfile.activeAssignments}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Заработано очков:</span>
+                        <span className="font-medium text-orange-600">{stats.totalPointsEarned || 0}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Средний рейтинг:</span>
@@ -374,6 +519,17 @@ const GuestDashboard = () => {
                           Предпочтения заданий
                         </Button>
                       </Link>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full justify-start"
+                        onClick={() => {
+                          addPoints(100);
+                          alert('Добавлено 100 тестовых очков!');
+                        }}
+                      >
+                        +100 тестовых очков
+                      </Button>
                     </div>
                   </div>
                 </div>
