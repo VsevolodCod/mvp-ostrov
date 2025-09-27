@@ -205,9 +205,11 @@ const Index = () => {
                   </li>
                 ))}
               </ul>
-              <Button className="mt-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3">
-                Проверить соответствие
-              </Button>
+              <Link to="/application">
+                <Button className="mt-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3">
+                  Проверить соответствие
+                </Button>
+              </Link>
             </div>
             <div className="bg-gradient-to-br from-blue-50 to-purple-50 p-8 rounded-2xl">
               <div className="text-center">
@@ -317,10 +319,12 @@ const Index = () => {
           </div>
 
           <div className="text-center mt-12">
-            <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50">
-              Посмотреть все отчеты
-              <ArrowRight className="ml-2 w-4 h-4" />
-            </Button>
+            <Link to="/reports">
+              <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50">
+                Посмотреть все отчеты
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

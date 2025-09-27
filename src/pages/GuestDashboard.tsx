@@ -9,41 +9,23 @@ import {
   Trophy, Target, Gift, Users
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useUserAssignments } from "@/hooks/useUserAssignments.js";
 
 const GuestDashboard = () => {
+  const { assignments, getUserStats, completeAssignment, cancelAssignment } = useUserAssignments();
+  const stats = getUserStats();
+
   const guestProfile = {
     name: "Анна Петрова",
     level: "Эксперт",
     rating: 4.8,
-    totalReports: 23,
-    completedAssignments: 21,
-    points: 2840,
+    totalReports: stats.completed,
+    completedAssignments: stats.completed,
+    activeAssignments: stats.active,
+    points: 2840 + (stats.completed * 100), // Добавляем баллы за выполненные задания
     nextLevelPoints: 3000,
     joinDate: "Январь 2023"
   };
-
-  const currentAssignments = [
-    {
-      id: 1,
-      hotel: "Гранд Отель Сочи",
-      city: "Сочи",
-      checkIn: "2024-04-15",
-      checkOut: "2024-04-17",
-      status: "Активное",
-      deadline: "2024-04-20",
-      reward: "Бесплатное проживание + 500 баллов"
-    },
-    {
-      id: 2,
-      hotel: "Бутик-отель Арбат",
-      city: "Москва", 
-      checkIn: "2024-04-25",
-      checkOut: "2024-04-27",
-      status: "Подтверждено",
-      deadline: "2024-04-30",
-      reward: "80% скидка + 300 баллов"
-    }
-  ];
 
   const recentReports = [
     {
@@ -186,11 +168,26 @@ const GuestDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {currentAssignments.map((assignment) => (
+                {assignments.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Target className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Нет активных заданий</h3>
+                    <p className="text-gray-600 mb-4">Выберите задание из раздела "ЗАДАНИЯ" чтобы начать работу</p>
+                    <Link to="/hotel-selection">
+                      <Button className="bg-gradient-to-r from-blue-600 to-purple-600">
+                        <Target className="mr-2 w-4 h-4" />
+                        Найти задания
+                      </Button>
+                    </Link>
+                  </div>
+                ) : (
+                  assignments.map((assignment) => (
                   <div key={assignment.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
                     <div className="flex justify-between items-start mb-3">
                       <div>
-                        <h3 className="font-semibold text-lg">{assignment.hotel}</h3>
+                        <h3 className="font-semibold text-lg">{assignment.hotel_name || assignment.title}</h3>
                         <p className="text-gray-600 flex items-center">
                           <MapPin className="w-4 h-4 mr-1" />
                           {assignment.city}
@@ -204,13 +201,13 @@ const GuestDashboard = () => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                       <div>
                         <p className="text-gray-600">Заезд - Выезд</p>
-                        <p className="font-medium">{assignment.checkIn} - {assignment.checkOut}</p>
+                        <p className="font-medium">{assignment.check_in_date} - {assignment.check_out_date}</p>
                       </div>
                       <div>
                         <p className="text-gray-600">Дедлайн отчета</p>
                         <p className="font-medium flex items-center">
                           <Clock className="w-4 h-4 mr-1" />
-                          {assignment.deadline}
+                          {assignment.deadline_date}
                         </p>
                       </div>
                       <div>
@@ -220,9 +217,9 @@ const GuestDashboard = () => {
                     </div>
                     
                     <div className="flex justify-end mt-4 space-x-2">
-                      <Link to={`/hotel/${assignment.id}`}>
+                      <Link to={`/hotel/${assignment.hotel_id || assignment.id}`}>
                         <Button variant="outline" size="sm">
-                          Детали задания
+                          Подробнее
                         </Button>
                       </Link>
                       {assignment.status === "Активное" && (
@@ -234,7 +231,8 @@ const GuestDashboard = () => {
                       )}
                     </div>
                   </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>

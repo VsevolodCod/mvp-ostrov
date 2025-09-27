@@ -17,6 +17,7 @@ import ReportForm from "./components/forms/ReportForm";
 import HotelDetails from "./pages/HotelDetails";
 import ReportView from "./pages/ReportView";
 import ProfileSettings from "./pages/ProfileSettings";
+import TestAPI from "./pages/TestAPI";
 
 const queryClient = new QueryClient();
 
@@ -25,7 +26,12 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Index />} />
@@ -40,6 +46,7 @@ const App = () => (
             <Route path="hotel/:id" element={<HotelDetails />} />
             <Route path="report/:id" element={<ReportView />} />
             <Route path="profile-settings" element={<ProfileSettings />} />
+            <Route path="test-api" element={<TestAPI />} />
           </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

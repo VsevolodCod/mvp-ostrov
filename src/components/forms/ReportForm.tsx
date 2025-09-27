@@ -125,7 +125,7 @@ const ReportForm = () => {
             </div>
             <div>
               <Label>Тип номера</Label>
-              <Input value={hotelInfo.roomType} />
+              <Input value={hotelInfo.roomType} readOnly />
             </div>
           </div>
 
