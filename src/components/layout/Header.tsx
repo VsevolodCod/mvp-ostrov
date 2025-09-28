@@ -58,6 +58,12 @@ const Header = () => {
                 Стать секретным гостем
               </Button>
             </Link>
+            {/* Скрытая кнопка для админов - можно убрать в продакшене */}
+            <Link to="/admin-login">
+              <Button variant="ghost" size="sm" className="text-xs text-gray-400 hover:text-gray-600">
+                Админ
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -96,6 +102,12 @@ const Header = () => {
                 <Link to="/application">
                   <Button size="sm" className="bg-gradient-ocean">
                     Стать секретным гостем
+                  </Button>
+                </Link>
+                {/* Скрытая кнопка для админов */}
+                <Link to="/admin-login">
+                  <Button variant="ghost" size="sm" className="text-xs text-gray-400 hover:text-gray-600">
+                    Админ-панель
                   </Button>
                 </Link>
               </div>
