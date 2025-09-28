@@ -18,6 +18,8 @@ import HotelDetails from "./pages/HotelDetails";
 import ReportView from "./pages/ReportView";
 import ProfileSettings from "./pages/ProfileSettings";
 import TestAPI from "./pages/TestAPI";
+import AdminLogin from "./components/auth/AdminLogin";
+import ProtectedAdminDashboard from "./components/auth/ProtectedAdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -37,7 +39,7 @@ const App = () => (
             <Route index element={<Index />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="guest-dashboard" element={<GuestDashboard />} />
-            <Route path="admin-dashboard" element={<AdminDashboard />} />
+            <Route path="admin-dashboard" element={<ProtectedAdminDashboard />} />
             <Route path="hotels" element={<Hotels />} />
             <Route path="hotel-selection" element={<HotelSelection />} />
             <Route path="reports" element={<Reports />} />
@@ -47,6 +49,7 @@ const App = () => (
             <Route path="report/:id" element={<ReportView />} />
             <Route path="profile-settings" element={<ProfileSettings />} />
             <Route path="test-api" element={<TestAPI />} />
+            <Route path="admin-login" element={<AdminLogin />} />
           </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

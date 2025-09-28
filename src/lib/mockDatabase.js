@@ -570,3 +570,448 @@ export const fetchAdminStats = async () => {
     topCities: [...new Set(hotels.map(h => h.city))].slice(0, 5)
   };
 };
+
+// Функции для управления заданиями
+export const createAssignment = async (assignmentData) => {
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  const newAssignment = {
+    id: assignments.length + 1,
+    ...assignmentData,
+    created_at: new Date().toISOString(),
+    status: 'active'
+  };
+  
+  assignments.push(newAssignment);
+  return newAssignment;
+};
+
+export const updateAssignment = async (id, updateData) => {
+  await new Promise(resolve => setTimeout(resolve, 400));
+  
+  const index = assignments.findIndex(assignment => assignment.id === parseInt(id));
+  if (index !== -1) {
+    assignments[index] = { ...assignments[index], ...updateData };
+    return assignments[index];
+  }
+  throw new Error('Assignment not found');
+};
+
+export const deleteAssignment = async (id) => {
+  await new Promise(resolve => setTimeout(resolve, 300));
+  
+  const index = assignments.findIndex(assignment => assignment.id === parseInt(id));
+  if (index !== -1) {
+    assignments.splice(index, 1);
+    return true;
+  }
+  throw new Error('Assignment not found');
+};
+
+export const getAllAssignments = async () => {
+  await new Promise(resolve => setTimeout(resolve, 400));
+  return assignments;
+};
+
+export const getAssignmentById = async (id) => {
+  await new Promise(resolve => setTimeout(resolve, 300));
+  return assignments.find(assignment => assignment.id === parseInt(id));
+};
+
+// Данные пользователей (секретных гостей)
+const users = [
+  {
+    id: 1,
+    name: "Анна Петрова",
+    email: "anna.petrova@email.com",
+    phone: "+7 (495) 123-45-67",
+    city: "Москва",
+    level: "Эксперт",
+    rating: 4.8,
+    totalReports: 23,
+    activeAssignments: 2,
+    joinDate: "2023-01-15",
+    status: "Активен",
+    experience: "15+ поездок в год",
+    specialties: ["Люкс отели", "SPA-услуги", "Рестораны"],
+    lastActivity: "2024-03-20",
+    totalEarnings: 45000,
+    completedAssignments: 21,
+    pendingReports: 1
+  },
+  {
+    id: 2,
+    name: "Михаил Козлов",
+    email: "mikhail.kozlov@email.com",
+    phone: "+7 (812) 234-56-78",
+    city: "Санкт-Петербург",
+    level: "Профи",
+    rating: 4.6,
+    totalReports: 15,
+    activeAssignments: 1,
+    joinDate: "2023-03-10",
+    status: "Активен",
+    experience: "20+ поездок в год",
+    specialties: ["Бизнес отели", "Конференц-залы", "Транспорт"],
+    lastActivity: "2024-03-18",
+    totalEarnings: 32000,
+    completedAssignments: 14,
+    pendingReports: 0
+  },
+  {
+    id: 3,
+    name: "Елена Смирнова",
+    email: "elena.smirnova@email.com",
+    phone: "+7 (495) 345-67-89",
+    city: "Москва",
+    level: "Новичок",
+    rating: 4.2,
+    totalReports: 5,
+    activeAssignments: 0,
+    joinDate: "2024-01-20",
+    status: "Активен",
+    experience: "8+ поездок в год",
+    specialties: ["Эконом отели", "Завтраки"],
+    lastActivity: "2024-03-15",
+    totalEarnings: 8500,
+    completedAssignments: 5,
+    pendingReports: 0
+  },
+  {
+    id: 4,
+    name: "Дмитрий Волков",
+    email: "dmitry.volkov@email.com",
+    phone: "+7 (862) 456-78-90",
+    city: "Сочи",
+    level: "Профи",
+    rating: 4.7,
+    totalReports: 18,
+    activeAssignments: 1,
+    joinDate: "2023-06-05",
+    status: "Активен",
+    experience: "25+ поездок в год",
+    specialties: ["Курортные отели", "Пляжи", "Анимация"],
+    lastActivity: "2024-03-19",
+    totalEarnings: 38000,
+    completedAssignments: 17,
+    pendingReports: 1
+  },
+  {
+    id: 5,
+    name: "Ольга Морозова",
+    email: "olga.morozova@email.com",
+    phone: "+7 (495) 567-89-01",
+    city: "Москва",
+    level: "Эксперт",
+    rating: 4.9,
+    totalReports: 31,
+    activeAssignments: 3,
+    joinDate: "2022-11-12",
+    status: "Активен",
+    experience: "30+ поездок в год",
+    specialties: ["Люкс отели", "VIP-сервис", "Консьерж"],
+    lastActivity: "2024-03-21",
+    totalEarnings: 67000,
+    completedAssignments: 28,
+    pendingReports: 2
+  }
+];
+
+// Заявки на участие
+const applications = [
+  {
+    id: 1,
+    name: "Мария Иванова",
+    email: "maria.ivanova@email.com",
+    phone: "+7 (495) 123-45-67",
+    city: "Москва",
+    experience: "15+ поездок в год",
+    appliedDate: "2024-03-20",
+    status: "На рассмотрении",
+    motivation: "Хочу помочь улучшить качество отельного сервиса в России",
+    specialties: ["Люкс отели", "SPA"],
+    documents: ["passport.pdf", "cv.pdf"],
+    priority: "Высокий"
+  },
+  {
+    id: 2,
+    name: "Алексей Петров",
+    email: "alexey.petrov@email.com",
+    phone: "+7 (812) 234-56-78",
+    city: "Санкт-Петербург",
+    experience: "20+ поездок в год",
+    appliedDate: "2024-03-19",
+    status: "На рассмотрении",
+    motivation: "Опыт работы в туризме, знаю индустрию изнутри",
+    specialties: ["Бизнес отели", "Конференции"],
+    documents: ["passport.pdf", "certificate.pdf"],
+    priority: "Средний"
+  },
+  {
+    id: 3,
+    name: "Татьяна Сидорова",
+    email: "tatyana.sidorova@email.com",
+    phone: "+7 (495) 345-67-89",
+    city: "Москва",
+    experience: "12+ поездок в год",
+    appliedDate: "2024-03-18",
+    status: "Одобрена",
+    motivation: "Люблю путешествовать и хочу делиться опытом",
+    specialties: ["Семейные отели", "Детские услуги"],
+    documents: ["passport.pdf", "references.pdf"],
+    priority: "Низкий"
+  }
+];
+
+// Отчеты
+const reports = [
+  {
+    id: 1,
+    guestId: 1,
+    guestName: "Анна Петрова",
+    hotelId: 1,
+    hotelName: "Гранд Отель Европа",
+    city: "Санкт-Петербург",
+    submittedDate: "2024-03-18",
+    rating: 4.2,
+    status: "На проверке",
+    priority: "Высокий",
+    assignmentId: 1,
+    checkInDate: "2024-03-15",
+    checkOutDate: "2024-03-17",
+    roomType: "Стандартный номер",
+    photos: ["room1.jpg", "breakfast.jpg", "spa.jpg"],
+    comments: "Отличный сервис, но завтрак мог бы быть разнообразнее",
+    detailedRating: {
+      cleanliness: 5,
+      service: 4,
+      location: 5,
+      amenities: 4,
+      value: 3
+    },
+    recommendations: "Добавить больше фруктов на завтрак",
+    issues: []
+  },
+  {
+    id: 2,
+    guestId: 2,
+    guestName: "Михаил Козлов",
+    hotelId: 2,
+    hotelName: "Отель Метрополь",
+    city: "Москва",
+    submittedDate: "2024-03-17",
+    rating: 4.5,
+    status: "Одобрен",
+    priority: "Средний",
+    assignmentId: 2,
+    checkInDate: "2024-03-14",
+    checkOutDate: "2024-03-16",
+    roomType: "Бизнес номер",
+    photos: ["room2.jpg", "business_center.jpg"],
+    comments: "Отличный бизнес-центр, быстрый интернет",
+    detailedRating: {
+      cleanliness: 5,
+      service: 4,
+      location: 5,
+      amenities: 5,
+      value: 4
+    },
+    recommendations: "Все отлично",
+    issues: []
+  },
+  {
+    id: 3,
+    guestId: 4,
+    guestName: "Дмитрий Волков",
+    hotelId: 5,
+    hotelName: "Гранд Отель Сочи",
+    city: "Сочи",
+    submittedDate: "2024-03-16",
+    rating: 3.8,
+    status: "На проверке",
+    priority: "Высокий",
+    assignmentId: 3,
+    checkInDate: "2024-03-12",
+    checkOutDate: "2024-03-14",
+    roomType: "Номер с видом на море",
+    photos: ["room3.jpg", "beach.jpg", "pool.jpg"],
+    comments: "Пляж хороший, но анимация слабая",
+    detailedRating: {
+      cleanliness: 4,
+      service: 3,
+      location: 5,
+      amenities: 4,
+      value: 3
+    },
+    recommendations: "Улучшить анимационную программу",
+    issues: ["Медленный Wi-Fi на пляже"]
+  }
+];
+
+// Функции для работы с пользователями
+export const getAllUsers = async () => {
+  await new Promise(resolve => setTimeout(resolve, 400));
+  return users;
+};
+
+export const getUserById = async (id) => {
+  await new Promise(resolve => setTimeout(resolve, 300));
+  return users.find(user => user.id === parseInt(id));
+};
+
+export const updateUserStatus = async (id, status) => {
+  await new Promise(resolve => setTimeout(resolve, 300));
+  const user = users.find(u => u.id === parseInt(id));
+  if (user) {
+    user.status = status;
+    return user;
+  }
+  throw new Error('User not found');
+};
+
+// Функции для работы с заявками
+export const getAllApplications = async () => {
+  await new Promise(resolve => setTimeout(resolve, 400));
+  return applications;
+};
+
+export const approveApplication = async (id) => {
+  await new Promise(resolve => setTimeout(resolve, 500));
+  const application = applications.find(app => app.id === parseInt(id));
+  if (application) {
+    application.status = "Одобрена";
+    
+    // Создаем нового пользователя
+    const newUser = {
+      id: users.length + 1,
+      name: application.name,
+      email: application.email,
+      phone: application.phone,
+      city: application.city,
+      level: "Новичок",
+      rating: 0,
+      totalReports: 0,
+      activeAssignments: 0,
+      joinDate: new Date().toISOString().split('T')[0],
+      status: "Активен",
+      experience: application.experience,
+      specialties: application.specialties,
+      lastActivity: new Date().toISOString().split('T')[0],
+      totalEarnings: 0,
+      completedAssignments: 0,
+      pendingReports: 0
+    };
+    
+    users.push(newUser);
+    return { application, newUser };
+  }
+  throw new Error('Application not found');
+};
+
+export const rejectApplication = async (id) => {
+  await new Promise(resolve => setTimeout(resolve, 300));
+  const application = applications.find(app => app.id === parseInt(id));
+  if (application) {
+    application.status = "Отклонена";
+    return application;
+  }
+  throw new Error('Application not found');
+};
+
+// Функции для работы с отчетами
+export const getAllReports = async () => {
+  await new Promise(resolve => setTimeout(resolve, 400));
+  return reports;
+};
+
+export const approveReport = async (id) => {
+  await new Promise(resolve => setTimeout(resolve, 300));
+  const report = reports.find(r => r.id === parseInt(id));
+  if (report) {
+    report.status = "Одобрен";
+    return report;
+  }
+  throw new Error('Report not found');
+};
+
+export const rejectReport = async (id, reason) => {
+  await new Promise(resolve => setTimeout(resolve, 300));
+  const report = reports.find(r => r.id === parseInt(id));
+  if (report) {
+    report.status = "Отклонен";
+    report.rejectionReason = reason;
+    return report;
+  }
+  throw new Error('Report not found');
+};
+
+// Функции для работы с отелями
+export const createHotel = async (hotelData) => {
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  const newHotel = {
+    id: hotels.length + 1,
+    ...hotelData,
+    created_at: new Date().toISOString(),
+    status: 'active',
+    totalReports: 0,
+    lastCheck: null,
+    needsCheck: false
+  };
+  
+  hotels.push(newHotel);
+  return newHotel;
+};
+
+export const updateHotel = async (id, updateData) => {
+  await new Promise(resolve => setTimeout(resolve, 400));
+  
+  const index = hotels.findIndex(hotel => hotel.id === parseInt(id));
+  if (index !== -1) {
+    hotels[index] = { ...hotels[index], ...updateData };
+    return hotels[index];
+  }
+  throw new Error('Hotel not found');
+};
+
+export const deleteHotel = async (id) => {
+  await new Promise(resolve => setTimeout(resolve, 300));
+  
+  const index = hotels.findIndex(hotel => hotel.id === parseInt(id));
+  if (index !== -1) {
+    hotels.splice(index, 1);
+    return true;
+  }
+  throw new Error('Hotel not found');
+};
+
+// Обновленная статистика
+export const getRealTimeStats = async () => {
+  await new Promise(resolve => setTimeout(resolve, 300));
+  
+  const activeUsers = users.filter(user => user.status === 'Активен');
+  const pendingApplications = applications.filter(app => app.status === 'На рассмотрении');
+  const pendingReports = reports.filter(report => report.status === 'На проверке');
+  const activeAssignments = assignments.length;
+  
+  const averageRating = reports.length > 0 
+    ? (reports.reduce((sum, report) => sum + report.rating, 0) / reports.length).toFixed(1)
+    : 0;
+  
+  return {
+    totalGuests: users.length,
+    activeGuests: activeUsers.length,
+    pendingApplications: pendingApplications.length,
+    totalHotels: hotels.length,
+    activeAssignments: activeAssignments,
+    completedReports: reports.filter(r => r.status === 'Одобрен').length,
+    pendingReports: pendingReports.length,
+    averageRating: parseFloat(averageRating),
+    totalEarnings: users.reduce((sum, user) => sum + user.totalEarnings, 0),
+    newUsersThisMonth: users.filter(user => {
+      const joinDate = new Date(user.joinDate);
+      const now = new Date();
+      return joinDate.getMonth() === now.getMonth() && joinDate.getFullYear() === now.getFullYear();
+    }).length
+  };
+};
