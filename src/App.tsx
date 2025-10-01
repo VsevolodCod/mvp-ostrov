@@ -21,7 +21,7 @@ import TestAPI from "./pages/TestAPI";
 import AdminLogin from "./components/auth/AdminLogin";
 import ProtectedAdminDashboard from "./components/auth/ProtectedAdminDashboard";
 import InteractiveReport from "./pages/InteractiveReport";
-import GameReport from "./pages/GameReport";
+import GameReport from "./pages/GameReportNew";
 
 const queryClient = new QueryClient();
 

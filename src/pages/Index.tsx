@@ -19,10 +19,10 @@ const Index = () => {
   const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
 
   const isInViewHero = useInView(heroRef, { once: true });
-  const isInViewProcess = useInView(processRef, { once: true, threshold: 0.3 });
-  const isInViewRequirements = useInView(requirementsRef, { once: true, threshold: 0.3 });
-  const isInViewReviews = useInView(reviewsRef, { once: true, threshold: 0.3 });
-  const isInViewCta = useInView(ctaRef, { once: true, threshold: 0.3 });
+  const isInViewProcess = useInView(processRef, { once: true });
+  const isInViewRequirements = useInView(requirementsRef, { once: true });
+  const isInViewReviews = useInView(reviewsRef, { once: true });
+  const isInViewCta = useInView(ctaRef, { once: true });
 
   useEffect(() => {
     setIsVisible(true);
@@ -277,7 +277,7 @@ const Index = () => {
                 </Button>
               </Link>
               <Link to="/hotel-selection">
-                <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 text-lg px-8 py-6 backdrop-blur-sm">
+                <Button size="lg" className="bg-white/20 border-2 border-white text-white hover:bg-white hover:text-blue-600 text-lg px-8 py-6 backdrop-blur-md shadow-xl transition-all duration-300 font-semibold">
                   Посмотреть задания
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
@@ -415,9 +415,11 @@ const Index = () => {
                 animate={isInViewRequirements ? { opacity: 1, y: 0 } : {}}
                 transition={{ delay: 0.6 }}
               >
-                <Button className="mt-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3">
-                  Проверить соответствие
-                </Button>
+                <Link to="/application">
+                  <Button className="mt-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 shadow-lg hover:shadow-xl transition-all duration-300">
+                    Проверить соответствие
+                  </Button>
+                </Link>
               </motion.div>
             </motion.div>
             <motion.div 
@@ -691,10 +693,12 @@ const Index = () => {
             animate={isInViewReviews ? { opacity: 1 } : {}}
             transition={{ delay: 0.6 }}
           >
-            <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50">
-              Посмотреть все отчеты
-              <ArrowRight className="ml-2 w-4 h-4" />
-            </Button>
+            <Link to="/reports">
+              <Button variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400 shadow-md hover:shadow-lg transition-all duration-300">
+                Посмотреть все отчеты
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            </Link>
           </motion.div>
         </div>
       </motion.section>
@@ -774,13 +778,13 @@ const Index = () => {
             transition={{ delay: 0.8 }}
           >
             <Link to="/application">
-              <Button size="lg" className="bg-gradient-to-r фfrom-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white text-lg px-10 py-6 shadow-2xl">
+              <Button size="lg" className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white text-lg px-10 py-6 shadow-2xl">
                 <CheckCircle className="mr-2 w-5 h-5" />
                 Подать заявку сейчас
               </Button>
             </Link>
             <Link to="/guest-dashboard">
-              <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 text-lg px-10 py-6 backdrop-blur-sm">
+              <Button size="lg" className="bg-white/20 border-2 border-white text-white hover:bg-white hover:text-purple-600 text-lg px-10 py-6 backdrop-blur-md shadow-xl transition-all duration-300 font-semibold">
                 <Users className="mr-2 w-5 h-5" />
                 Войти в личный кабинет
               </Button>
