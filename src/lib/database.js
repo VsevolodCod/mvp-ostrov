@@ -101,6 +101,55 @@ const createTables = () => {
     )
   `);
 
+  // Таблица заявок на участие
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS applications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      first_name TEXT NOT NULL,
+      last_name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      birth_date DATE,
+      city TEXT NOT NULL,
+      country TEXT NOT NULL,
+      trips_per_year TEXT NOT NULL,
+      preferred_regions TEXT, -- JSON
+      budget_range TEXT NOT NULL,
+      travel_style TEXT,
+      languages TEXT,
+      hotel_types TEXT, -- JSON
+      specializations TEXT, -- JSON
+      social_media TEXT, -- JSON
+      motivation TEXT NOT NULL,
+      availability TEXT,
+      status TEXT DEFAULT 'На рассмотрении', -- На рассмотрении, Одобрено, Отклонено
+      admin_notes TEXT,
+      submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      reviewed_at DATETIME,
+      reviewed_by INTEGER
+    )
+  `);
+
+  // Таблица чекпоинтов отчетов
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS report_checkpoints (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      report_id INTEGER,
+      assignment_id INTEGER,
+      checkpoint_type TEXT NOT NULL, -- transfer, checkin, stay, checkout
+      title TEXT NOT NULL,
+      description TEXT,
+      rating INTEGER,
+      content TEXT,
+      points_earned INTEGER DEFAULT 0,
+      completed BOOLEAN DEFAULT FALSE,
+      completed_at DATETIME,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (report_id) REFERENCES reports (id),
+      FOREIGN KEY (assignment_id) REFERENCES assignments (id)
+    )
+  `);
+
   console.log('Таблицы созданы успешно');
 };
 
@@ -179,6 +228,94 @@ export const addAssignment = (assignment) => {
     assignment.check_in_date, assignment.check_out_date, assignment.deadline_date,
     assignment.room_type, JSON.stringify(assignment.special_requirements)
   );
+};
+
+// Функция для добавления заявки
+export const addApplication = (application) => {
+  const stmt = db.prepare(`
+    INSERT INTO applications (
+      first_name, last_name, email, phone, birth_date, city, country,
+      trips_per_year, preferred_regions, budget_range, travel_style, languages,
+      hotel_types, specializations, social_media, motivation, availability
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  return stmt.run(
+    application.firstName, application.lastName, application.email, application.phone,
+    application.birthDate, application.city, application.country, application.tripsPerYear,
+    JSON.stringify(application.preferredRegions), application.budgetRange, application.travelStyle,
+    application.languages, JSON.stringify(application.hotelTypes), JSON.stringify(application.specializations),
+    JSON.stringify(application.socialMedia), application.motivation, application.availability
+  );
+};
+
+// Функция для получения всех заявок
+export const getAllApplications = () => {
+  const stmt = db.prepare('SELECT * FROM applications ORDER BY submitted_at DESC');
+  return stmt.all();
+};
+
+// Функция для обновления статуса заявки
+export const updateApplicationStatus = (id, status, adminNotes, reviewedBy) => {
+  const stmt = db.prepare(`
+    UPDATE applications 
+    SET status = ?, admin_notes = ?, reviewed_by = ?, reviewed_at = CURRENT_TIMESTAMP 
+    WHERE id = ?
+  `);
+  return stmt.run(status, adminNotes, reviewedBy, id);
+};
+
+// Функция для создания отчета
+export const createReport = (assignmentId, guestId, hotelId) => {
+  const stmt = db.prepare(`
+    INSERT INTO reports (assignment_id, guest_id, hotel_id, status)
+    VALUES (?, ?, ?, 'В процессе')
+  `);
+  return stmt.run(assignmentId, guestId, hotelId);
+};
+
+// Функция для сохранения чекпоинта
+export const saveCheckpoint = (reportId, assignmentId, checkpointData) => {
+  const stmt = db.prepare(`
+    INSERT OR REPLACE INTO report_checkpoints 
+    (report_id, assignment_id, checkpoint_type, title, description, rating, content, points_earned, completed, completed_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  return stmt.run(
+    reportId, assignmentId, checkpointData.type, checkpointData.title, checkpointData.description,
+    checkpointData.rating, checkpointData.content, checkpointData.pointsEarned, 
+    checkpointData.completed, checkpointData.completed ? new Date().toISOString() : null
+  );
+};
+
+// Функция для получения чекпоинтов отчета
+export const getReportCheckpoints = (reportId) => {
+  const stmt = db.prepare('SELECT * FROM report_checkpoints WHERE report_id = ? ORDER BY created_at');
+  return stmt.all(reportId);
+};
+
+// Функция для завершения отчета
+export const completeReport = (reportId, overallRating, categoriesRatings, recommendationsHotel, recommendationsGuests) => {
+  const stmt = db.prepare(`
+    UPDATE reports 
+    SET overall_rating = ?, categories_ratings = ?, recommendations_hotel = ?, 
+        recommendations_guests = ?, status = 'На проверке', submitted_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `);
+  return stmt.run(overallRating, JSON.stringify(categoriesRatings), recommendationsHotel, recommendationsGuests, reportId);
+};
+
+// Функция для получения отчета по ID
+export const getReportById = (reportId) => {
+  const stmt = db.prepare(`
+    SELECT r.*, h.name as hotel_name, h.city, a.title as assignment_title
+    FROM reports r
+    JOIN hotels h ON r.hotel_id = h.id
+    JOIN assignments a ON r.assignment_id = a.id
+    WHERE r.id = ?
+  `);
+  return stmt.get(reportId);
 };
 
 // Инициализация базы данных

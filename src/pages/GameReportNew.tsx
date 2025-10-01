@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { pointsSystem } from "@/lib/pointsSystem.js";
 import { useAssignments } from "@/hooks/useAssignments.js";
+import { api } from "@/lib/api";
 
 function GameReportNew() {
     const { reportId } = useParams();
@@ -86,6 +87,35 @@ function GameReportNew() {
 
     const [activeCheckpoint, setActiveCheckpoint] = useState(null);
 
+    // Загрузка сохраненных чекпоинтов
+    useEffect(() => {
+        const loadCheckpoints = async () => {
+            try {
+                const savedCheckpoints = await api.getCheckpoints(reportId);
+                if (savedCheckpoints.length > 0) {
+                    setCheckpoints(prev => prev.map(cp => {
+                        const saved = savedCheckpoints.find(scp => scp.id === cp.id);
+                        return saved ? { ...cp, ...saved } : cp;
+                    }));
+                    
+                    // Обновляем прогресс на основе сохраненных данных
+                    const completedCount = savedCheckpoints.filter(cp => cp.completed).length;
+                    const totalPoints = savedCheckpoints.reduce((sum, cp) => sum + (cp.pointsEarned || 0), 0);
+                    
+                    setReport(prev => ({
+                        ...prev,
+                        totalPoints,
+                        progress: (completedCount / checkpoints.length) * 100
+                    }));
+                }
+            } catch (error) {
+                console.error('Ошибка при загрузке чекпоинтов:', error);
+            }
+        };
+
+        loadCheckpoints();
+    }, [reportId]);
+
     useEffect(() => {
         const timer = setInterval(() => {
             setReport(prev => ({
@@ -102,19 +132,36 @@ function GameReportNew() {
         return minutes > 0 ? `${minutes}м ${secs}с` : `${secs}с`;
     };
 
-    const completeCheckpoint = (checkpointId, content, rating) => {
+    const completeCheckpoint = async (checkpointId, content, rating) => {
+        const checkpoint = checkpoints.find(cp => cp.id === checkpointId);
+        if (!checkpoint) return;
+
+        const completedAt = new Date().toISOString();
+        let earnedPoints = checkpoint.points;
+        const ratingBonus = rating >= 4 ? 50 : rating >= 3 ? 25 : 0;
+        const lengthBonus = content.length > 100 ? 50 : content.length > 50 ? 25 : 0;
+        const totalEarned = earnedPoints + ratingBonus + lengthBonus;
+
+        // Обновляем локальное состояние
         setCheckpoints(prev => prev.map(cp =>
             cp.id === checkpointId
-                ? { ...cp, completed: true, content, rating, completedAt: new Date().toISOString() }
+                ? { ...cp, completed: true, content, rating, completedAt, pointsEarned: totalEarned }
                 : cp
         ));
 
-        const checkpoint = checkpoints.find(cp => cp.id === checkpointId);
-        if (checkpoint) {
-            let earnedPoints = checkpoint.points;
-            const ratingBonus = rating >= 4 ? 50 : rating >= 3 ? 25 : 0;
-            const lengthBonus = content.length > 100 ? 50 : content.length > 50 ? 25 : 0;
-            const totalEarned = earnedPoints + ratingBonus + lengthBonus;
+        // Сохраняем в базу данных
+        try {
+            await api.saveCheckpoint(reportId, {
+                id: checkpointId,
+                type: checkpointId,
+                title: checkpoint.title,
+                description: checkpoint.description,
+                rating,
+                content,
+                pointsEarned: totalEarned,
+                completed: true,
+                completedAt
+            });
 
             pointsSystem.addPoints(totalEarned, `Чекпоинт: ${checkpoint.title} (${report.hotelName})`);
 
@@ -125,6 +172,10 @@ function GameReportNew() {
             }));
 
             setStreakCount(prev => prev + 1);
+            
+        } catch (error) {
+            console.error('Ошибка при сохранении чекпоинта:', error);
+            alert('Ошибка при сохранении. Попробуйте еще раз.');
         }
 
         setActiveCheckpoint(null);

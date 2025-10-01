@@ -81,6 +81,124 @@ export const getUrgentHotels = async () => {
   return HotelPrioritySystem.getUrgentHotels(hotels);
 };
 
+// Новые API функции для заявок и чекпоинтов
+export const api = {
+  // Подать заявку
+  submitApplication: async (applicationData) => {
+    try {
+      const newApplication = {
+        id: Date.now(),
+        ...applicationData,
+        status: 'На рассмотрении',
+        submittedAt: new Date().toISOString()
+      };
+      
+      // Сохраняем в localStorage для демонстрации
+      const applications = JSON.parse(localStorage.getItem('applications') || '[]');
+      applications.push(newApplication);
+      localStorage.setItem('applications', JSON.stringify(applications));
+      
+      return newApplication;
+    } catch (error) {
+      console.error('Ошибка при подаче заявки:', error);
+      throw error;
+    }
+  },
+
+  // Получить все заявки (для админа)
+  getApplications: async () => {
+    try {
+      return JSON.parse(localStorage.getItem('applications') || '[]');
+    } catch (error) {
+      console.error('Ошибка при получении заявок:', error);
+      return [];
+    }
+  },
+
+  // Обновить статус заявки
+  updateApplicationStatus: async (id, status, adminNotes) => {
+    try {
+      const applications = JSON.parse(localStorage.getItem('applications') || '[]');
+      const index = applications.findIndex(app => app.id === id);
+      
+      if (index !== -1) {
+        applications[index] = {
+          ...applications[index],
+          status,
+          adminNotes,
+          reviewedAt: new Date().toISOString()
+        };
+        localStorage.setItem('applications', JSON.stringify(applications));
+        return applications[index];
+      }
+      return null;
+    } catch (error) {
+      console.error('Ошибка при обновлении заявки:', error);
+      throw error;
+    }
+  },
+
+  // Сохранить чекпоинт
+  saveCheckpoint: async (reportId, checkpointData) => {
+    try {
+      const checkpoints = JSON.parse(localStorage.getItem(`checkpoints_${reportId}`) || '[]');
+      
+      const existingIndex = checkpoints.findIndex(cp => cp.id === checkpointData.id);
+      
+      if (existingIndex !== -1) {
+        checkpoints[existingIndex] = {
+          ...checkpoints[existingIndex],
+          ...checkpointData,
+          updatedAt: new Date().toISOString()
+        };
+      } else {
+        checkpoints.push({
+          ...checkpointData,
+          createdAt: new Date().toISOString()
+        });
+      }
+      
+      localStorage.setItem(`checkpoints_${reportId}`, JSON.stringify(checkpoints));
+      return checkpointData;
+    } catch (error) {
+      console.error('Ошибка при сохранении чекпоинта:', error);
+      throw error;
+    }
+  },
+
+  // Получить чекпоинты отчета
+  getCheckpoints: async (reportId) => {
+    try {
+      return JSON.parse(localStorage.getItem(`checkpoints_${reportId}`) || '[]');
+    } catch (error) {
+      console.error('Ошибка при получении чекпоинтов:', error);
+      return [];
+    }
+  },
+
+  // Завершить отчет
+  completeReport: async (reportId, reportData) => {
+    try {
+      const reports = JSON.parse(localStorage.getItem('completedReports') || '[]');
+      
+      const completedReport = {
+        id: reportId,
+        ...reportData,
+        status: 'На проверке',
+        submittedAt: new Date().toISOString()
+      };
+      
+      reports.push(completedReport);
+      localStorage.setItem('completedReports', JSON.stringify(reports));
+      
+      return completedReport;
+    } catch (error) {
+      console.error('Ошибка при завершении отчета:', error);
+      throw error;
+    }
+  }
+};
+
 export { 
   fetchAssignmentsByHotel, 
   searchHotels, 

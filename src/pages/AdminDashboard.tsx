@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/ButtonWrapper";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  Users, Hotel, FileText, TrendingUp, Star, 
-  CheckCircle, AlertCircle, Clock, Eye, 
+import {
+  Users, Hotel, FileText, TrendingUp, Star,
+  CheckCircle, AlertCircle, Clock, Eye,
   Filter, Download, Search, MoreHorizontal,
   UserCheck, Building, MapPin, Calendar,
   Plus, Edit, Trash2, Target
@@ -16,11 +16,11 @@ import {
 import { Link } from "react-router-dom";
 import CreateAssignmentForm from "@/components/forms/CreateAssignmentForm";
 import CreateHotelForm from "@/components/forms/CreateHotelForm";
-import { 
-  getAllAssignments, 
-  deleteAssignment, 
-  getAllUsers, 
-  getAllApplications, 
+import {
+  getAllAssignments,
+  deleteAssignment,
+  getAllUsers,
+  getAllApplications,
   getAllReports,
   approveApplication,
   rejectApplication,
@@ -30,7 +30,8 @@ import {
   updateHotel,
   deleteHotel,
   getRealTimeStats,
-  fetchHotels
+  fetchHotels,
+  api
 } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
 import { LogOut } from "lucide-react";
@@ -120,7 +121,8 @@ const AdminDashboard = () => {
   const loadApplications = async () => {
     setIsLoadingApplications(true);
     try {
-      const applicationsData = await getAllApplications();
+      // Используем наш новый API для получения заявок
+      const applicationsData = await api.getApplications();
       setApplications(applicationsData);
     } catch (error) {
       console.error("Ошибка загрузки заявок:", error);
@@ -391,22 +393,22 @@ const AdminDashboard = () => {
                   </div>
                 ) : (
                   applications.filter(app => app.status === "На рассмотрении").map((application) => (
-                  <div key={application.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-lg">{application.name}</h3>
-                        <p className="text-gray-600 text-sm">{application.email}</p>
-                        <div className="flex items-center mt-2 space-x-4 text-sm text-gray-600">
-                          <span className="flex items-center">
-                            <MapPin className="w-4 h-4 mr-1" />
-                            {application.city}
-                          </span>
-                          <span>{application.experience}</span>
-                          <span className="flex items-center">
-                            <Calendar className="w-4 h-4 mr-1" />
-                            {application.appliedDate}
-                          </span>
-                        </div>
+                    <div key={application.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg">{application.name}</h3>
+                          <p className="text-gray-600 text-sm">{application.email}</p>
+                          <div className="flex items-center mt-2 space-x-4 text-sm text-gray-600">
+                            <span className="flex items-center">
+                              <MapPin className="w-4 h-4 mr-1" />
+                              {application.city}
+                            </span>
+                            <span>{application.experience}</span>
+                            <span className="flex items-center">
+                              <Calendar className="w-4 h-4 mr-1" />
+                              {application.appliedDate}
+                            </span>
+                          </div>
                           <div className="mt-2">
                             <p className="text-sm text-gray-700">{application.motivation}</p>
                             <div className="flex flex-wrap gap-1 mt-1">
@@ -417,27 +419,27 @@ const AdminDashboard = () => {
                               ))}
                             </div>
                           </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge className={getStatusColor(application.status)}>
-                          {application.status}
-                        </Badge>
-                        <Button variant="outline" size="sm" onClick={() => alert('Просмотр заявки: ' + application.name)}>
-                          <Eye className="w-4 h-4 mr-1" />
-                          Просмотр
-                        </Button>
-                          <Button 
-                            size="sm" 
-                            className="bg-green-600 hover:bg-green-700" 
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Badge className={getStatusColor(application.status)}>
+                            {application.status}
+                          </Badge>
+                          <Button variant="outline" size="sm" onClick={() => alert('Просмотр заявки: ' + application.name)}>
+                            <Eye className="w-4 h-4 mr-1" />
+                            Просмотр
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700"
                             onClick={async () => {
                               try {
-                                await approveApplication(application.id);
+                                await api.updateApplicationStatus(application.id, 'Одобрено', 'Заявка одобрена администратором');
                                 await loadApplications();
                                 await loadUsers();
                                 await loadStats();
                                 toast({
                                   title: "Заявка одобрена",
-                                  description: `${application.name} стал секретным гостем`,
+                                  description: `${application.firstName} ${application.lastName} стал секретным гостем`,
                                 });
                               } catch (error) {
                                 toast({
@@ -448,21 +450,21 @@ const AdminDashboard = () => {
                               }
                             }}
                           >
-                          <UserCheck className="w-4 h-4 mr-1" />
-                          Одобрить
-                        </Button>
-                          <Button 
-                            size="sm" 
+                            <UserCheck className="w-4 h-4 mr-1" />
+                            Одобрить
+                          </Button>
+                          <Button
+                            size="sm"
                             variant="outline"
                             className="text-red-600 hover:text-red-700"
                             onClick={async () => {
                               try {
-                                await rejectApplication(application.id);
+                                await api.updateApplicationStatus(application.id, 'Отклонено', 'Заявка не соответствует требованиям');
                                 await loadApplications();
                                 await loadStats();
                                 toast({
                                   title: "Заявка отклонена",
-                                  description: `Заявка от ${application.name} отклонена`,
+                                  description: `Заявка от ${application.firstName} ${application.lastName} отклонена`,
                                 });
                               } catch (error) {
                                 toast({
@@ -518,25 +520,25 @@ const AdminDashboard = () => {
                   </div>
                 ) : (
                   users.map((guest) => (
-                  <div key={guest.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3">
-                          <h3 className="font-semibold text-lg">{guest.name}</h3>
-                          <Badge variant="outline">{guest.level}</Badge>
-                          <Badge className={getStatusColor(guest.status)}>
-                            {guest.status}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center mt-2 space-x-6 text-sm text-gray-600">
-                          <div className="flex items-center">
-                            <Star className="w-4 h-4 text-yellow-500 fill-current mr-1" />
-                            <span>{guest.rating}</span>
+                    <div key={guest.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3">
+                            <h3 className="font-semibold text-lg">{guest.name}</h3>
+                            <Badge variant="outline">{guest.level}</Badge>
+                            <Badge className={getStatusColor(guest.status)}>
+                              {guest.status}
+                            </Badge>
                           </div>
-                          <span>Отчетов: {guest.totalReports}</span>
-                          <span>Активных заданий: {guest.activeAssignments}</span>
-                          <span>Участник с {guest.joinDate}</span>
-                        </div>
+                          <div className="flex items-center mt-2 space-x-6 text-sm text-gray-600">
+                            <div className="flex items-center">
+                              <Star className="w-4 h-4 text-yellow-500 fill-current mr-1" />
+                              <span>{guest.rating}</span>
+                            </div>
+                            <span>Отчетов: {guest.totalReports}</span>
+                            <span>Активных заданий: {guest.activeAssignments}</span>
+                            <span>Участник с {guest.joinDate}</span>
+                          </div>
                           <div className="mt-2 text-sm text-gray-600">
                             <p>Город: {guest.city} • Опыт: {guest.experience}</p>
                             <p>Заработано: {guest.totalEarnings.toLocaleString()} ₽ • Последняя активность: {guest.lastActivity}</p>
@@ -548,18 +550,18 @@ const AdminDashboard = () => {
                               ))}
                             </div>
                           </div>
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button variant="outline" size="sm" onClick={() => alert('Профиль гостя: ' + guest.name)}>
-                          <Eye className="w-4 h-4 mr-1" />
-                          Профиль
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => alert('Дополнительные действия для: ' + guest.name)}>
-                          <MoreHorizontal className="w-4 h-4" />
-                        </Button>
+                        </div>
+                        <div className="flex space-x-2">
+                          <Button variant="outline" size="sm" onClick={() => alert('Профиль гостя: ' + guest.name)}>
+                            <Eye className="w-4 h-4 mr-1" />
+                            Профиль
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => alert('Дополнительные действия для: ' + guest.name)}>
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
                   ))
                 )}
               </div>
@@ -653,9 +655,9 @@ const AdminDashboard = () => {
                               <Edit className="w-4 h-4 mr-1" />
                               Редактировать
                             </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
+                            <Button
+                              variant="outline"
+                              size="sm"
                               onClick={() => handleDeleteAssignment(assignment.id)}
                               className="text-red-600 hover:text-red-700"
                             >
@@ -708,25 +710,25 @@ const AdminDashboard = () => {
                   </div>
                 ) : (
                   reports.filter(report => report.status === "На проверке").map((report) => (
-                  <div key={report.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-lg">{report.hotelName}</h3>
-                        <p className="text-gray-600">Автор: {report.guestName}</p>
-                        <div className="flex items-center mt-2 space-x-4 text-sm text-gray-600">
-                          <span className="flex items-center">
-                            <MapPin className="w-4 h-4 mr-1" />
-                            {report.city}
-                          </span>
-                          <span className="flex items-center">
-                            <Star className="w-4 h-4 text-yellow-500 fill-current mr-1" />
-                            {report.rating}
-                          </span>
-                          <span>Отправлен: {report.submittedDate}</span>
-                          <span className={`font-medium ${getPriorityColor(report.priority)}`}>
-                            {report.priority} приоритет
-                          </span>
-                        </div>
+                    <div key={report.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg">{report.hotelName}</h3>
+                          <p className="text-gray-600">Автор: {report.guestName}</p>
+                          <div className="flex items-center mt-2 space-x-4 text-sm text-gray-600">
+                            <span className="flex items-center">
+                              <MapPin className="w-4 h-4 mr-1" />
+                              {report.city}
+                            </span>
+                            <span className="flex items-center">
+                              <Star className="w-4 h-4 text-yellow-500 fill-current mr-1" />
+                              {report.rating}
+                            </span>
+                            <span>Отправлен: {report.submittedDate}</span>
+                            <span className={`font-medium ${getPriorityColor(report.priority)}`}>
+                              {report.priority} приоритет
+                            </span>
+                          </div>
                           <div className="mt-2 text-sm text-gray-700">
                             <p><strong>Комментарий:</strong> {report.comments}</p>
                             {report.recommendations && (
@@ -736,20 +738,20 @@ const AdminDashboard = () => {
                               <p><strong>Проблемы:</strong> {report.issues.join(", ")}</p>
                             )}
                           </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge className={getStatusColor(report.status)}>
-                          {report.status}
-                        </Badge>
-                        <Link to={`/report/${report.id}`}>
-                          <Button variant="outline" size="sm">
-                            <Eye className="w-4 h-4 mr-1" />
-                            Просмотр
-                          </Button>
-                        </Link>
-                          <Button 
-                            size="sm" 
-                            className="bg-green-600 hover:bg-green-700" 
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Badge className={getStatusColor(report.status)}>
+                            {report.status}
+                          </Badge>
+                          <Link to={`/report/${report.id}`}>
+                            <Button variant="outline" size="sm">
+                              <Eye className="w-4 h-4 mr-1" />
+                              Просмотр
+                            </Button>
+                          </Link>
+                          <Button
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700"
                             onClick={async () => {
                               try {
                                 await approveReport(report.id);
@@ -768,11 +770,11 @@ const AdminDashboard = () => {
                               }
                             }}
                           >
-                          <CheckCircle className="w-4 h-4 mr-1" />
-                          Одобрить
-                        </Button>
-                          <Button 
-                            size="sm" 
+                            <CheckCircle className="w-4 h-4 mr-1" />
+                            Одобрить
+                          </Button>
+                          <Button
+                            size="sm"
                             variant="outline"
                             className="text-red-600 hover:text-red-700"
                             onClick={async () => {
@@ -840,25 +842,25 @@ const AdminDashboard = () => {
                   </div>
                 ) : (
                   hotels.map((hotel) => (
-                  <div key={hotel.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3">
-                          <h3 className="font-semibold text-lg">{hotel.name}</h3>
-                          <Badge variant="outline">{hotel.type}</Badge>
+                    <div key={hotel.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3">
+                            <h3 className="font-semibold text-lg">{hotel.name}</h3>
+                            <Badge variant="outline">{hotel.type}</Badge>
                             <Badge className="bg-yellow-100 text-yellow-800">
                               {hotel.stars} звезд
-                          </Badge>
-                        </div>
-                        <div className="flex items-center mt-2 space-x-6 text-sm text-gray-600">
-                          <span className="flex items-center">
-                            <MapPin className="w-4 h-4 mr-1" />
-                            {hotel.city}
-                          </span>
-                          <span className="flex items-center">
-                            <Star className="w-4 h-4 text-yellow-500 fill-current mr-1" />
+                            </Badge>
+                          </div>
+                          <div className="flex items-center mt-2 space-x-6 text-sm text-gray-600">
+                            <span className="flex items-center">
+                              <MapPin className="w-4 h-4 mr-1" />
+                              {hotel.city}
+                            </span>
+                            <span className="flex items-center">
+                              <Star className="w-4 h-4 text-yellow-500 fill-current mr-1" />
                               {hotel.rating || "Новый"}
-                          </span>
+                            </span>
                             <span>Отчетов: {hotel.totalReports || 0}</span>
                             <span>Цена: {hotel.price_per_night?.toLocaleString()} ₽/ночь</span>
                           </div>
@@ -880,25 +882,25 @@ const AdminDashboard = () => {
                               )}
                             </div>
                           </div>
-                      </div>
-                      <div className="flex space-x-2">
-                        <Link to={`/hotel/${hotel.id}`}>
-                          <Button variant="outline" size="sm">
-                            <Eye className="w-4 h-4 mr-1" />
-                            Детали
-                          </Button>
-                        </Link>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
+                        </div>
+                        <div className="flex space-x-2">
+                          <Link to={`/hotel/${hotel.id}`}>
+                            <Button variant="outline" size="sm">
+                              <Eye className="w-4 h-4 mr-1" />
+                              Детали
+                            </Button>
+                          </Link>
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => alert('Редактирование отеля: ' + hotel.name)}
                           >
                             <Edit className="w-4 h-4 mr-1" />
                             Редактировать
                           </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={async () => {
                               if (window.confirm(`Удалить отель "${hotel.name}"?`)) {
                                 try {
