@@ -16,7 +16,19 @@ const hotels = [
     photos: ["facade.jpg", "room.jpg", "restaurant.jpg", "spa.jpg"],
     contact_phone: "+7 (812) 329-60-00",
     contact_email: "info@grandhoteleurope.com",
-    website: "www.grandhoteleurope.com"
+    website: "www.grandhoteleurope.com",
+    review_count: 150,
+    detailed_reviews: true,
+    last_review_date: "2024-09-15",
+    last_secret_guest_date: "2024-07-20",
+    secret_guest_visit_rate: 0.15,
+    rating_history: [
+      { date: "2024-09-01", rating: 4.7 },
+      { date: "2024-08-01", rating: 4.8 },
+      { date: "2024-07-01", rating: 4.6 },
+      { date: "2024-06-01", rating: 4.9 },
+      { date: "2024-05-01", rating: 4.8 }
+    ]
   },
   {
     id: 2,
@@ -32,7 +44,19 @@ const hotels = [
     photos: ["facade.jpg", "room.jpg", "restaurant.jpg", "spa.jpg"],
     contact_phone: "+7 (495) 501-78-00", 
     contact_email: "info@metropol-moscow.ru",
-    website: "www.metropol-moscow.ru"
+    website: "www.metropol-moscow.ru",
+    review_count: 89,
+    detailed_reviews: false,
+    last_review_date: "2024-06-10",
+    last_secret_guest_date: "2024-03-15",
+    secret_guest_visit_rate: 0.08,
+    rating_history: [
+      { date: "2024-09-01", rating: 4.6 },
+      { date: "2024-08-01", rating: 4.7 },
+      { date: "2024-07-01", rating: 4.8 },
+      { date: "2024-06-01", rating: 4.9 },
+      { date: "2024-05-01", rating: 4.8 }
+    ]
   },
   {
     id: 3,
@@ -80,7 +104,19 @@ const hotels = [
     photos: ["facade.jpg", "room.jpg", "beach.jpg", "pool.jpg"],
     contact_phone: "+7 (862) 555-01-01",
     contact_email: "info@grandsochi.ru",
-    website: "www.grandsochi.ru"
+    website: "www.grandsochi.ru",
+    review_count: 45,
+    detailed_reviews: false,
+    last_review_date: "2024-08-20",
+    last_secret_guest_date: null, // Никогда не проверялся
+    secret_guest_visit_rate: 0.0,
+    rating_history: [
+      { date: "2024-09-01", rating: 4.2 },
+      { date: "2024-08-01", rating: 4.3 },
+      { date: "2024-07-01", rating: 4.5 },
+      { date: "2024-06-01", rating: 4.6 },
+      { date: "2024-05-01", rating: 4.7 }
+    ]
   },
   {
     id: 6,

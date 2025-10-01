@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { fetchHotelById, fetchAssignmentsByHotel } from "@/lib/api.js";
-import { useUserAssignments } from "@/hooks/useUserAssignments.js";
+import { useAssignments } from "@/hooks/useAssignments.js";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import {
 
 const HotelDetails = () => {
   const { id } = useParams();
-  const { takeAssignment, isAssignmentTaken } = useUserAssignments();
+  const { takeAssignment, isAssignmentTaken } = useAssignments();
   const [hotelData, setHotelData] = useState(null);
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -118,12 +118,6 @@ const HotelDetails = () => {
       { category: "Номер", url: "/api/placeholder/400/300" },
       { category: "Ресторан", url: "/api/placeholder/400/300" },
       { category: "SPA", url: "/api/placeholder/400/300" }
-    ],
-    photos: [
-      { category: "Фасад отеля" },
-      { category: "Номер" },
-      { category: "Ресторан" },
-      { category: "SPA-центр" }
     ],
     recentReports: [
       {

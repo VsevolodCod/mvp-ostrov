@@ -1,16 +1,47 @@
 // Простое глобальное состояние для управления заданиями пользователя
 // В реальном приложении это было бы в Redux, Zustand или Context API
 
+interface Assignment {
+  id: string | number;
+  hotel_name: string;
+  city: string;
+  status: string;
+  takenAt?: string;
+  completedAt?: string;
+  userId?: string;
+  pointsEarned?: number;
+  reportData?: any;
+  [key: string]: any;
+}
+
+interface UserStats {
+  total: number;
+  active: number;
+  completed: number;
+  points: number;
+  totalPointsEarned: number;
+}
+
+interface LevelInfo {
+  name: string;
+  minPoints: number;
+  maxPoints: number;
+  color: string;
+  icon: string;
+  description: string;
+}
+
 class UserStore {
+  private assignments: Assignment[] = [];
+  private points: number = 0;
+  private listeners: Function[] = [];
+
   constructor() {
-    this.assignments = [];
-    this.points = 0;
-    this.listeners = [];
     this.loadFromStorage();
   }
 
   // Загрузка данных из localStorage
-  loadFromStorage() {
+  private loadFromStorage(): void {
     try {
       const savedData = localStorage.getItem('userStore');
       if (savedData) {
@@ -24,7 +55,7 @@ class UserStore {
   }
 
   // Сохранение данных в localStorage
-  saveToStorage() {
+  private saveToStorage(): void {
     try {
       const dataToSave = {
         assignments: this.assignments,
@@ -37,7 +68,7 @@ class UserStore {
   }
 
   // Подписка на изменения
-  subscribe(listener) {
+  subscribe(listener: (assignments: Assignment[], points: number) => void): () => void {
     this.listeners.push(listener);
     return () => {
       this.listeners = this.listeners.filter(l => l !== listener);
@@ -45,29 +76,29 @@ class UserStore {
   }
 
   // Уведомление подписчиков об изменениях
-  notify() {
+  private notify(): void {
     this.saveToStorage();
     this.listeners.forEach(listener => listener(this.assignments, this.points));
   }
 
   // Получить все задания пользователя
-  getUserAssignments() {
+  getUserAssignments(): Assignment[] {
     return this.assignments;
   }
 
   // Взять задание
-  takeAssignment(assignment) {
+  takeAssignment(assignment: any): boolean {
     const existingAssignment = this.assignments.find(a => a.id === assignment.id);
     if (existingAssignment) {
       console.log('Задание уже взято');
       return false;
     }
 
-    const userAssignment = {
+    const userAssignment: Assignment = {
       ...assignment,
       status: 'Активное',
       takenAt: new Date().toISOString(),
-      userId: 'current-user' // В реальном приложении это был бы ID текущего пользователя
+      userId: 'current-user'
     };
 
     this.assignments.push(userAssignment);
@@ -76,7 +107,7 @@ class UserStore {
   }
 
   // Завершить задание
-  completeAssignment(assignmentId, reportData = {}) {
+  completeAssignment(assignmentId: string | number, reportData: any = {}): { success: boolean; pointsEarned: number } {
     const assignment = this.assignments.find(a => a.id === assignmentId);
     if (assignment && assignment.status === 'Активное') {
       assignment.status = 'Завершено';
@@ -95,7 +126,7 @@ class UserStore {
   }
 
   // Расчет очков за задание
-  calculatePoints(assignment) {
+  private calculatePoints(assignment: Assignment): number {
     let basePoints = 100; // Базовые очки за выполнение
     
     // Бонус за приоритет
@@ -124,25 +155,25 @@ class UserStore {
   }
 
   // Отменить задание
-  cancelAssignment(assignmentId) {
+  cancelAssignment(assignmentId: string | number): boolean {
     this.assignments = this.assignments.filter(a => a.id !== assignmentId);
     this.notify();
     return true;
   }
 
   // Проверить, взято ли задание
-  isAssignmentTaken(assignmentId) {
+  isAssignmentTaken(assignmentId: string | number): boolean {
     return this.assignments.some(a => a.id === assignmentId);
   }
 
   // Получить статистику пользователя
-  getUserStats() {
+  getUserStats(): UserStats {
     const total = this.assignments.length;
     const active = this.assignments.filter(a => a.status === 'Активное').length;
     const completed = this.assignments.filter(a => a.status === 'Завершено').length;
     const totalPointsEarned = this.assignments
       .filter(a => a.status === 'Завершено' && a.pointsEarned)
-      .reduce((sum, a) => sum + a.pointsEarned, 0);
+      .reduce((sum, a) => sum + (a.pointsEarned || 0), 0);
     
     return {
       total,
@@ -154,20 +185,20 @@ class UserStore {
   }
 
   // Получить текущие очки
-  getPoints() {
+  getPoints(): number {
     return this.points;
   }
 
   // Добавить очки (для тестирования или бонусов)
-  addPoints(amount) {
+  addPoints(amount: number): number {
     this.points += amount;
     this.notify();
     return this.points;
   }
 
   // Система уровней
-  getLevelInfo(points = this.points) {
-    const levels = [
+  getLevelInfo(points: number = this.points) {
+    const levels: LevelInfo[] = [
       { name: "Новичок", minPoints: 0, maxPoints: 499, color: "gray", icon: "🌱", description: "Только начинаете свой путь" },
       { name: "Исследователь", minPoints: 500, maxPoints: 999, color: "blue", icon: "🔍", description: "Изучаете мир отелей" },
       { name: "Критик", minPoints: 1000, maxPoints: 1999, color: "green", icon: "⭐", description: "Опытный оценщик" },
@@ -202,7 +233,7 @@ class UserStore {
   }
 
   // Сбросить все данные (для тестирования)
-  resetData() {
+  resetData(): void {
     this.assignments = [];
     this.points = 0;
     localStorage.removeItem('userStore');

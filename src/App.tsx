@@ -10,7 +10,7 @@ import Hotels from "./pages/Hotels";
 import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 import GuestDashboard from "./pages/GuestDashboard";
-import HotelSelection from "./pages/HotelSelection";
+import HotelSelection from "./pages/HotelSelectionNew";
 import AdminDashboard from "./pages/AdminDashboard";
 import ApplicationForm from "./components/forms/ApplicationForm";
 import ReportForm from "./components/forms/ReportForm";
@@ -20,6 +20,8 @@ import ProfileSettings from "./pages/ProfileSettings";
 import TestAPI from "./pages/TestAPI";
 import AdminLogin from "./components/auth/AdminLogin";
 import ProtectedAdminDashboard from "./components/auth/ProtectedAdminDashboard";
+import InteractiveReport from "./pages/InteractiveReport";
+import GameReport from "./pages/GameReport";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +49,8 @@ const App = () => (
             <Route path="create-report" element={<ReportForm />} />
             <Route path="hotel/:id" element={<HotelDetails />} />
             <Route path="report/:id" element={<ReportView />} />
+            <Route path="interactive-report/:id" element={<InteractiveReport />} />
+            <Route path="game-report/:reportId" element={<GameReport />} />
             <Route path="profile-settings" element={<ProfileSettings />} />
             <Route path="test-api" element={<TestAPI />} />
             <Route path="admin-login" element={<AdminLogin />} />
