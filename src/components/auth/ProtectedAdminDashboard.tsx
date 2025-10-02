@@ -21,7 +21,7 @@ const ProtectedAdminDashboard = () => {
   const adminEmail = localStorage.getItem('adminEmail');
 
   if (!isAdmin || !adminEmail) {
-    return null; // Не рендерим ничего, пока идет перенаправление
+    return null; 
   }
 
   return <AdminDashboard />;

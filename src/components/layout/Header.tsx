@@ -58,7 +58,7 @@ const Header = () => {
                 Стать секретным гостем
               </Button>
             </Link>
-            {/* Скрытая кнопка для админов - можно убрать в продакшене */}
+            {/* Скрытая кнопка для админов, в продакшене убрать */}
             <Link to="/admin-login">
               <Button variant="ghost" size="sm" className="text-xs text-gray-400 hover:text-gray-600">
                 Админ
